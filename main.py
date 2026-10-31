@@ -1144,7 +1144,7 @@ def solve_00():
     text_split = text.split(', ')
     dicti = {}
     for bro in text_split:
-        if bro in dicti:
+        if bro in dicti:  # только наличие ключа так можно проверять (?)
             dicti[bro] += 1
         else:
             dicti[bro] = 1
@@ -1154,7 +1154,7 @@ def solve_00():
     '''solve_00 конец определения'''
 
 
-'''solve_01 Анализ конверсии пользователей 
+'''solve_01 начало. Анализ конверсии пользователей 
 Вы анализируете результаты email-рассылки.
 Для каждого пользователя известно, открыл ли он письмо:
 1 - пользователь совершил целевое дейстиве
@@ -1193,56 +1193,334 @@ def solve_01():
     print(round((num_1 / (num_0 + num_1)) * 100, 2))  # ЗДЕСЬ Я ОШИБСЯ, ВЕДЬ 0.375 ОКРУГЛИТСЯ ДО 0.38 СНАЧАЛА
 
 
-# Press the green button in the gutter to run the script.
+'''solve_01 конец определения'''
+
+''' solve_02 начало определения. Средний балл студента
+Даны оценки студента через пробел (целые числа от 1 до 5). Нужно посчитать средний балл и вывести его с 
+округлением до двух знаков после запятой.
+Формат ввода:
+5 4 3 5 4
+Формат вывода:
+4.20
+Примеры:
+5 5 5 5     → 5.00
+2 3 2 3     → 2.50
+5 4 3 5 4   → 4.20
+1 1 1       → 1.00'''
+
+
+def solve_02():
+    text = read_line().split()
+    # print(text)  # Выведет ['5', '4', '3', '5', '4']
+    text_int = list(map(int, text))  # map работает лениво и выдаёт объект-итератор, поэтому чтобы увидеть список,
+    # приходится вызывать list()
+    # print(text_int)  # Почему я не могу превратить в int? Теперь могу с list().
+    sum = 0
+    for t in text_int:
+        sum += t
+    aver = sum / text_int.__len__()
+    writeln(aver)
+    '''solve_02 конец определения'''
+
+
+def solve_03():
+    '''Слова и их частоты
+Дана строка со словами через пробел. Нужно вывести каждое уникальное слово и количество его вхождений.
+Сортировка: сначала по частоте по убыванию, при равенстве — по алфавиту.
+Формат ввода:
+cat dog cat bird dog cat
+Формат вывода:
+cat 3
+dog 2
+bird 1  '''
+    text = 'cat dog cat bird dog cat cb cd cb cd cb cd dp dp dq dq'
+    text_spl = text.split()
+    # print(text_spl)
+    dicti = {}
+    for w in text_spl:
+        if w in dicti:
+            dicti[w] += 1
+        else:
+            dicti[w] = 1
+    sorted_dicti = dict(sorted(dicti.items(), key=lambda item: item[1], reverse=True))  # вариант 1
+    print(sorted_dicti)
+    for key, value in sorted_dicti.items():
+        print(f'{key} {value}')
+
+
+def solve_03_b():
+    text = 'cat dog cat bird dog cat cb cd cb cd cb cd dp dp dq dq'
+    text_spl = text.split()
+    from collections import Counter
+    for w, c in Counter(text_spl).most_common():
+        print(f'{w} {c}')
+    words = ["2b", "3ap", "4rry", "1", "2a", 4]
+    print(sorted(words, key=len))
+
+
+def solve_04_palindrome(text):
+    '''
+Проверка строки на палиндром
+Напишите программу, которая проверяет, является ли введенная строка палиндромом (то есть читается одинаково
+слева направо и справа налево, игнорируя пробелы и регистр).'''
+    text = text.lower()
+    return text == text[::-1]
+    print(text)
+
+
+def second_biggest(text):
+    '''Второй по величине элемент
+Дан список целых чисел через пробел. Нужно найти второй по величине уникальный элемент.
+Если такого нет — вывести "нет".
+Формат ввода:
+5 3 9 1 9 7
+Формат вывода:
+7
+Примеры:
+5 3 9 1 9 7   → 7
+3 3 3 3       → нет
+1 2           → 1
+5 5 4 4 3     → 4
+10            → нет'''
+    text = text.split()
+    mnozh = set()
+    for t in text:
+        mnozh.add(t)
+    text = []
+    text.extend(mnozh)
+    text.sort()
+    if text.__len__() > 1:
+        print(text[-2])
+    else:
+        print('net')
+
+
+def even_more_10(*numbers):
+    '''Напишите программу на Python, которая принимает на вход список чисел и возвращает новый список,
+    содержащий только те числа из исходного списка, которые являются чётными и при этом больше 10.
+• Входные данные: [4, 12, 15, 8, 22, 10, 31, 44]
+• Выходные данные: [12, 22, 44]'''
+    return list(filter(lambda x: x > 10 and x % 2 == 0, numbers))
+
+
+def unique_elems_order(*elems):
+    '''Задание: «Удаление дубликатов с сохранением порядка»
+
+Условие: Напишите функцию, которая принимает на вход список чисел или строк и возвращает новый список.
+В новом списке должны остаться только уникальные элементы, причем их первоначальный
+порядок должен сохраниться. Использовать готовое преобразование list(set(array)) нельзя,
+так как set (множество) ломает исходный порядок элементов.'''
+    dicto = dict()
+    for e in elems:
+        dicto[e] = ''
+    return list(dicto.keys())
+
+
+def find_pair_with_sum(nums: [], target: int):
+    '''Задание: Поиск пары с заданной суммой (Two Sum):
+Напишите функцию find_pair_with_sum, которая принимает на вход массив целых чисел nums и целевое число target.
+Функция должна найти два числа в массиве, сумма которых равна target, и вернуть их индексы в виде кортежа или списка.
+Ограничения и допущения:
+• Предполагается, что существует ровно одно гарантированное решение.
+• Нельзя использовать один и тот же элемент дважды (нельзя складывать число само с собой по одному и тому же индексу).
+• Порядок индексов в ответе не важен.
+• Желательно найти решение быстрее, чем за квадратное время \(O(n^2)\).
+nums = [2, 7, 11, 15]
+target = 9
+# Функция должна вернуть (0, 1), так как nums[0] + nums[1] == 9'''
+    t = target
+    for i in range(len(nums) - 1):
+        for k in range(1, len(nums) - 1):
+            if (t - nums[i] - nums[k]) == 0:
+                return (i, k)
+
+
+def anagrams(*words):
+    ''' Задание: Группировка анаграмм:
+Дан список строк strs. Вам нужно сгруппировать анаграммы вместе. Вы можете вернуть ответ в любом порядке.
+Анаграмма — это слово, образованное путем перестановки букв другого слова, обычно с использованием всех
+исходных букв ровно один раз (например, «пятак» и «пятка», или «eat» и «tea»).
+Пример 1:
+• Входные данные: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+• Выходные данные: [["bat"], ["nat", "tan"], ["ate", "eat", "tea"]]
+Пример 2:
+• Входные данные: strs = [""]
+• Выходные данные: [[""]]           '''
+    sl_sl = dict()
+    for w in words:
+        l = list(w)
+        di = dict()
+        for k in l:
+            if di.__contains__(k):
+                di[k] += 1
+            else:
+                di[k] = 1
+        sl_sl[w] = di  # после этог не смог уже доделать, т.к. не смог пройтись по словарю после удаления
+        # ключей из него.
+    # print(sl_sl)
+    sp_sp = list()
+    iterator = iter(sl_sl)
+    while True:
+        try:
+            my_dict = next(iterator)
+            value = sl_sl[my_dict]
+            print(my_dict)
+            target_value = sl_sl[my_dict]
+            print(target_value)
+            keys = [k for k, v in sl_sl.items() if v == target_value]
+            # print(keys)
+            sp_sp.append(keys)
+            print(f'sp_sp = {sp_sp}')
+            for udal in keys:
+                print(f'udal = {udal}')
+                sl_sl.pop(udal)
+            print(f'sl_sl = {sl_sl}')
+        except StopIteration:
+            print('inside Stopiteration')
+            break
+        except:
+            continue
+        print('+++++++++++++++++++++++++++')
+        print(f'sp_sp = {sp_sp}')
+
+
+from collections import defaultdict
+
+
+def group_anagrams(strs2: list[str]) -> list[list[str]]:  # решение ИИ
+    # Используем defaultdict из модуля collections.
+    # Если ключа еще нет в словаре, он автоматически создаст пустой список [].
+    # Это избавляет нас от лишних проверок в стиле "if key not in dict".
+    anagrams_map = defaultdict(list)
+
+    # Проходим циклом по каждому слову в исходном списке
+    for word in strs2:
+        # 1. sorted(word) раскладывает слово на список букв и сортирует их.
+        #    Например: sorted("tea") -> ['a', 'e', 't']
+        # 2. "".join(...) склеивает эти буквы обратно в строку.
+        #    Например: "aet"
+        # Отсортированная строка будет уникальным "ключом-шаблоном" для всех анаграмм.
+        sorted_word = "".join(sorted(word))
+
+        # Добавляем оригинальное слово в список под его отсортированным ключом
+        anagrams_map[sorted_word].append(word)
+
+    # Метод .values() возвращает только сгруппированные списки слов.
+    # Оборачиваем в list(), чтобы привести результат к стандартному типу списка.
+    return list(anagrams_map.values())
+
+@njit(parallel=True)
+def ods_ai_000():
+    '''https://ods.ai/tracks/open-ml-course/blocks/15dba915-f940-4f22-a19b-0510aae1b152
+    Написать код, который вычисляет сумму всех чисел, удовлетворяющих следующие условия:
+положительные целые числа от 1 до 1_000_000_002 (один миллиард два) включительно
+которые нацело (без остатка) делятся на 3 (пример: 3, 6, 9, ...)
+и которые не заканчиваются на 4 и 7 (пример заканчивающихся на 4 и 7: 24, 27, 54, 57 ...)
+Вернуть нужно только число, являющееся ответом, без пробелов и других символов.'''
+    import numpy as np
+    from numba import njit
+    result = 0
+    for i in range(1, 100_000_000): #1_000_000_003 #очень долго работает через for
+        if (i % 3 == 0 and i % 10 != 4 and i % 10 != 7):
+            result += i
+            print(i)
+        else:
+            print(f'-{i}')
+    print(f'result = {result}')
+
+
 if __name__ == '__main__':
-    '''solve_01 начало запуска'''
-    test_input = '1 0 1 0 0 1 1 0'  # 50.0
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    print('-------------')
-    test_input = '0 0 1 0 0 1 1 0'  # 37.5
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    print('-------------')
-    test_input = '0 0 0 0 0 0 0 0'  # 0.0
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    print('-------------')
-    test_input = '1 1 1 1 1 1 1 1'  # 100.0
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    print('-------------')
-    test_input = '0 0 1 0 0 0 0 0 0'  # 11.11
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    print('-------------')
-    test_input = '0 0 1 0 0 1 0 0 0 0 0 0 0'  # 15.38
-    sys.stdin = io.StringIO(test_input)
-    solve_01()
-    '''solve_01 конец запуска'''
-    '''solve_00 начало запуска'''
-    # # ── имитация теста ──────────────────────────
-    # test_input = "Chrome, Edge, Firefox, Chrome, Edge, Safari, Firefox, Edge, Chrome\n"  # →Edge
-    # sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
-    # solve_00()
-    # # ────────────────────────────────────────────
-    # test_input = "Chrome, Firefox, Chrome, Safari, Firefox, Chrome"  # → Chrome
-    # sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
-    # solve_00()
-    # # ────────────────────────────────────────────
-    # test_input = "GET, POST, PUT, POST, GET, PUT"  # → PUT
-    # sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
-    # solve_00()
-    # # ────────────────────────────────────────────
-    # test_input = "A, B, C, B, A, C, D"  # → C
-    # sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
-    # solve_00()
-    # # ────────────────────────────────────────────
-    # test_input = "DELETE"  # → DELETE'''"
-    # sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
-    # solve_00()
-    # # ────────────────────────────────────────────
-    '''solve_00 конец запуска'''
+    ods_ai_000()
+
+    # test_words = ["eat", "tea", "tan", "ate", "nat", "bat"]
+    # result = group_anagrams(test_words)
+    #
+    # print("Результат группировки:")
+    # print(result)
+
+#    print(anagrams("eat", "enraged", "cheater", "teacher", "tea", "tan", "angered", "ate", "nat", "bat"))
+
+# print(find_pair_with_sum([2, 7, 11, 15], 9))  # (0, 1)
+# print(find_pair_with_sum([10, -3, 5, 1, 8], 2))  # (1, 2)
+
+# print(unique_elems_order(1, 1 , 64, 2, 78, 0, 64))
+# print(even_more_10(4, 12, 15, 8, 22, 10, 31, 44))
+# second_biggest('5 3 9 1 9 7')  # 7
+# second_biggest('3 3 3 3')  # net
+# second_biggest('1 2')  # 1
+# second_biggest('5 5 4 4 3')  # 4
+# second_biggest('10')  # net
+# print(solve_04_palindrome('GrIold'))
+# print(solve_04_palindrome('kazak'))
+# print(solve_04_palindrome('oKno'))
+# print(solve_04_palindrome('komok'))
+# solve_03_b()
+# '''solve_02 начало запуска'''
+# test_input = '5 4 3 5 4'  # 4.20
+# sys.stdin = io.StringIO(test_input)
+# solve_02()
+# print('-------------')
+# test_input = '5 5 5 5'  # 5.0
+# sys.stdin = io.StringIO(test_input)
+# solve_02()
+# print('-------------')
+# test_input = '2 3 2 3'  # 2.50
+# sys.stdin = io.StringIO(test_input)
+# solve_02()
+# print('-------------')
+# test_input = '1 1 1'  # 1.0
+# sys.stdin = io.StringIO(test_input)
+# solve_02()
+# print('-------------')
+'''solve_02 конец запуска'''
+# '''solve_01 начало запуска'''
+# test_input = '1 0 1 0 0 1 1 0'  # 50.0
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+# print('-------------')
+# test_input = '0 0 1 0 0 1 1 0'  # 37.5
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+# print('-------------')
+# test_input = '0 0 0 0 0 0 0 0'  # 0.0
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+# print('-------------')
+# test_input = '1 1 1 1 1 1 1 1'  # 100.0
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+# print('-------------')
+# test_input = '0 0 1 0 0 0 0 0 0'  # 11.11
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+# print('-------------')
+# test_input = '0 0 1 0 0 1 0 0 0 0 0 0 0'  # 15.38
+# sys.stdin = io.StringIO(test_input)
+# solve_01()
+'''solve_01 конец запуска'''
+'''solve_00 начало запуска'''
+# # ── имитация теста ──────────────────────────
+# test_input = "Chrome, Edge, Firefox, Chrome, Edge, Safari, Firefox, Edge, Chrome\n"  # →Edge
+# sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
+# solve_00()
+# # ────────────────────────────────────────────
+# test_input = "Chrome, Firefox, Chrome, Safari, Firefox, Chrome"  # → Chrome
+# sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
+# solve_00()
+# # ────────────────────────────────────────────
+# test_input = "GET, POST, PUT, POST, GET, PUT"  # → PUT
+# sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
+# solve_00()
+# # ────────────────────────────────────────────
+# test_input = "A, B, C, B, A, C, D"  # → C
+# sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
+# solve_00()
+# # ────────────────────────────────────────────
+# test_input = "DELETE"  # → DELETE'''"
+# sys.stdin = io.StringIO(test_input)  # имитация чтения через создание псевдо инпута
+# solve_00()
+# # ────────────────────────────────────────────
+'''solve_00 конец запуска'''
 
 # order_pizza_task_19("large", "сыр", "грибы", delivery=True, address="Москва")
 # order_pizza_task_19(34, delivery=False)
