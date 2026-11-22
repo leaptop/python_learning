@@ -1,4 +1,6 @@
 # This is a sample Python script.
+import difflib
+import filecmp
 import random
 
 
@@ -1243,6 +1245,9 @@ bird 1  '''
         else:
             dicti[w] = 1
     sorted_dicti = dict(sorted(dicti.items(), key=lambda item: item[1], reverse=True))  # вариант 1
+    # Здесь говорим, что key - анонимная функция, item её аргумент, сортировка происходит по содежимому
+    # , лежащему по индексу 1 аргумента item. Из items , берём содержимое по одному item и берём
+    # второй элемент из item и по нему сравниваем для сортировки.
     print(sorted_dicti)
     for key, value in sorted_dicti.items():
         print(f'{key} {value}')
@@ -1409,7 +1414,7 @@ def group_anagrams(strs2: list[str]) -> list[list[str]]:  # решение ИИ
     # Оборачиваем в list(), чтобы привести результат к стандартному типу списка.
     return list(anagrams_map.values())
 
-@njit(parallel=True)
+
 def ods_ai_000():
     '''https://ods.ai/tracks/open-ml-course/blocks/15dba915-f940-4f22-a19b-0510aae1b152
     Написать код, который вычисляет сумму всех чисел, удовлетворяющих следующие условия:
@@ -1418,19 +1423,821 @@ def ods_ai_000():
 и которые не заканчиваются на 4 и 7 (пример заканчивающихся на 4 и 7: 24, 27, 54, 57 ...)
 Вернуть нужно только число, являющееся ответом, без пробелов и других символов.'''
     import numpy as np
-    from numba import njit
-    result = 0
-    for i in range(1, 100_000_000): #1_000_000_003 #очень долго работает через for
-        if (i % 3 == 0 and i % 10 != 4 and i % 10 != 7):
-            result += i
-            print(i)
+    nums = np.arange(1, 1_000_000_003, dtype=np.int64)
+    filtered_nums = nums[(nums % 3 == 0) & (nums % 10 != 4) & (nums % 10 != 7)]  # НУЖНЫ СКОБОЧКИ МЕЖДУ &
+    print(filtered_nums.sum())
+
+    # result = 0  # проверочный код в кондовом варианте
+    # for i in range(1, 100):  # 1_000_000_003 #очень долго работает через for
+    #     if (i % 3 == 0 and i % 10 != 4 and i % 10 != 7):
+    #         result += i
+    #         print(i)
+    #     else:
+    #         print(f'-{i}')
+    # print(f'result = {result}')  # для 1 - 30 : 84, для 1 - 100 : 1350
+
+
+def ods_ai_001():
+    '''На вход поступает текстовый файл из 3-х тысяч строк test_input_file_1.txt
+проверка в test_output_file_1.txt
+    или input_file.txt
+Формат файла:
+    "арифметическая операция"    "целое число #1"    "целое число #2"
+Разделитель - 4 пробела
+Нужно подготовить текстовый файл из 1 строки.
+Строка содержит набор из 3-х тысяч чисел, разделенных запятой.
+После последнего числа запятая не ставится.
+каждое число - результат операции:
+    "результирующее целое число" = "целое число #1" применить "арифметическая операция" "целое число #2"
+Пример входного файла:
++    5    4
+-    -10449    -7623
+**    2    10
+Пример выходного файла (для примера входного файла выше):
+9,-2826,1024
+Допустимые операции:
++ (сложение)
+- (вычитание)
+* (умножение)
+// (целочисленное деление) (для этой операции подаются только положительные числа)
+% (остаток от деления) (для этой операции подаются только положительные числа)
+** (возведение в степень) (для этой операции подаются только положительные числа)
+Входные числа - только целые.
+Выходные числа - только целые.'''
+    import filecmp  # file comparator
+    file_r = open("input_file.txt", "r")
+    file_w = open("reshaem.txt", "a")
+    for l in file_r.readlines():
+        l = l.split()
+        if l[0] == '-':
+            stroka = "," + str(int(l[1]) - int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '+':
+            stroka = "," + str(int(l[1]) + int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '*':
+            stroka = "," + str(int(l[1]) * int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '/':
+            stroka = "," + str(int(l[1]) / int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '//':
+            stroka = "," + str(int(l[1]) // int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '%':
+            stroka = "," + str(int(l[1]) % int(l[2]))
+            file_w.write(stroka)
+        elif l[0] == '**':
+            stroka = "," + str(int(l[1]) ** int(l[2]))
+            file_w.write(stroka)
+    with open("reshaem.txt", "r+", encoding="utf-8") as f:  # Конструкция with (контекстный менеджер) автоматически
+        # закроет файл сразу после выхода из блока кода — даже если внутри возникнет ошибка или исключение.
+        content = f.read()
+        f.seek(0)
+        f.write(content[1:])  # Убираем встроенную в начале запятую
+        f.truncate()  # Обрезаем остатки старого файла
+
+    file_w.close()
+    file_r.close()
+
+
+def compare_files(file1, file2, encoding="utf-8"):
+    # 1. Проверяем полное совпадение содержимого через filecmp
+    if filecmp.cmp(file1, file2, shallow=False):
+        print("Файлы полностью идентичны.")
+        return
+
+    print("Файлы различаются. Вот в чём отличие:\n")
+
+    # 2. Если не равны, читаем построчно и выводим diff с помощью difflib
+    try:
+        with open(file1, "r", encoding=encoding) as f1, open(
+                file2, "r", encoding=encoding
+        ) as f2:
+            lines1 = f1.readlines()
+            lines2 = f2.readlines()
+
+        diff = difflib.unified_diff(
+            lines1, lines2, fromfile=file1, tofile=file2, lineterm=""
+        )
+
+        for line in diff:
+            print(line)
+
+    except UnicodeDecodeError:
+        print(
+            "Не удалось прочитать один из файлов как текст (возможно, это бинарные файлы)."
+        )
+
+
+def ods_ai_002():  # доделать
+    '''На вход поступает два текстовых файла из 3-х тысяч строк каждый.
+Первый файл содержит строки текста.
+Второй файл содержит строки из двух целых неотрицательных чисел.
+Первое число в строке всегда меньше или равно второму.
+Числа всегда меньше длины соответствующей строки первого файла.
+
+Подготовить выходной файл, который состоит из подстрок 1-го входного файла.
+Подстроки разделены пробелами.
+Какие брать подстроки - написано во втором файле.
+В конце файла пробела нет.
+Например:
+    120 строка в 1-ом файле: JBOljrfkrfjgikenfjerkrkvkfKUGlknc
+    120 строка во 2-ом файле: 13 27
+Это значит 120 подстрока в результирующем файле это символы с 13 по 27, включая 13-ый и 27-ой символы.
+Пример требуемой подстроки: kenfjerkrkvkfKU'''
+    # with (open("test_import_file_2_1.txt", "r") as f_texts,
+    #       open("test_import_file_2_2.txt", "r") as f_nums,
+    #       open("test_output_file_2.txt", "r") as f_results,
+    #       open("moj_result.txt", "w") as f_moj_r
+    #       ):
+
+
+def testok():
+    seto = set([3, 6, 7])
+    print(seto)
+
+
+def deepseek_00():
+    '''Задача 5. Python: количество уникальных цифр в каждом числе
+На вход подаётся строка с целыми числами через пробел.
+Для каждого числа нужно определить количество уникальных цифр.
+Вернуть строку с количествами через пробел.
+
+Пример:
+
+Ввод:
+
+text
+101 202 303 123 56477
+Вывод:
+
+text
+2 2 2
+Потому что в
+101
+101 уникальные цифры:
+1
+,
+0
+1,0 — две; в
+202
+202:
+2
+,
+0
+2,0 — две; в
+303
+303:
+3
+,
+0
+3,0 — две.
+
+Решение на Python
+python
+
+'''
+    import sys
+    line = sys.stdin.readline().rstrip('\n')
+    numbers = line.split()
+    result = []
+
+    for token in numbers:
+        # Оставляем только цифры. Это нужно, если вдруг число отрицательное.
+        digits = set(ch for ch in token if ch.isdigit())
+        result.append(str(len(digits)))
+
+    print(' '.join(result))
+
+
+def read_line():
+    return sys.stdin.readline().rstrip('\n')
+
+
+def parsinguem_1():
+    '''Блок A. Парсинг и проценты (по 2 минуты)
+Вход: 3 1 4 1 5. Выведи сумму и максимум через пробел. → 14 5'''
+    linio = read_line()
+    lini = linio.split()
+    inti = []
+    sum = 0
+    max = 0
+    for l in lini:
+        li = int(l)
+        inti.append(li)
+        sum += li
+        if li > max:
+            max = li
+    print(f'{sum} {max}')
+
+
+def parsinguem_2():
+    s = read_line()
+    nums = list(map(int, s.split()))
+    total_sum = sum(nums)
+    maxo = max(nums)
+    print(f'{total_sum} {maxo}')
+
+
+def parsinguem_3():
+    '''Вход: a, b, , c. Выведи число непустых элементов. → 3'''
+    s = sys.stdin.readline().rstrip('\n')
+    items = s.strip()  # удалили пробелы справа и слева.
+    print(items)
+    items = s.strip().strip('ano')  # удалили 'ano' из начала и конца '  ano drako brako ano dano bano  '
+    print(items)
+
+
+def parsinguem_i_tp():
+    s1 = '  kuro   , kiro  ,  polovino  '
+    items = [x.strip() for x in s1.split(',')]  # Перебираем в цикле строки разбитые по запятой,
+    # и сразу обрезаем прробелы    # и засовываем всё в список
+    print(items)
+    numostringi = '21 563   66  9 22'
+    numi = list(map(int, numostringi.split()))
+    print(numi)
+    words = '2ako 3ri 3ri 1biko 4f 4f 1ca 2ac 2ako 4f  1caca 2ac 4l 4f 4l 4l 4l 3ri'
+    cnt = {}
+    for x in words.split():  # Считаем частоту слов с помощью словаря. При этом храним порядок первого появления.
+        cnt[x] = cnt.get(x, 500) + 1  # 500 поставил чтобы проверить как вставляется значение по умолчанию.
+        # Конечно для нормального подсчёта надо ставить ноль.
+    print(cnt)
+    best = max(cnt, key=lambda k: cnt[k])  # Перебирает значения и находит максимальное.
+    # Если есть несколько максимальных
+    # и равных между собой, то возвращает ключ первого встрченного из максимальных.
+    print(f'ключ = {best}, значение = {cnt[best]}')
+    # Чтобы найти последний встреченный из максимальных:
+    a, b = None, float('-inf')  # float('inf') - минус бесконечность
+    for k, v in cnt.items():
+        if v >= b:
+            a, b = k, v
+    print(f'ключ = {a}, значение = {b}')
+    # Здесь получаем последний статус заказа для составного ключа (составлен из названия магазина и id заказа):
+    orders = "Магазин_1, Заказ_10, Создан; Магазин_2, Заказ_73, Оплачен; Магазин_1, Заказ_10, Оплачен; Магазин_1, Заказ_10, Доставлен"
+    last_status = {}
+    orders_split = orders.split('; ')
+    for item in orders_split:
+        shop, order, status = item.split(', ')
+        last_status[(shop, order)] = status
+    print(last_status)
+    rows = [('Магазин_А', 'Заказ_101', 'Создан'),
+            ('Магазин_Б', 'Заказ_205', 'Создан'),
+            ('Магазин_А', 'Заказ_101', 'Оплачен'),  # перезапишет 'Создан' для Заказа_101
+            ('Магазин_Б', 'Заказ_205', 'Отменен'),  # перезапишет 'Создан' для Заказа_205
+            ('Магазин_А', 'Заказ_101', 'Доставлен')]
+    last = {}
+    for g, o, st in rows:  # Эта штука работает только для списка кортежей
+        last[(g, o)] = st
+    print(last)
+    dicto = {}
+    dicto['rty'] = dicto.get('rty', list())
+    # dicto.append('qas',[1,3]) #Вызовет ошибку AttributeError: 'dict' object has no attribute 'append'
+    # append() метод есть только у defaultdict()
+    print(dicto)
+    from collections import defaultdict
+    groups = ['a', 'b', 'a']
+    values = [1, 2, 3, 4]  # четвёрка уже не будет ни к чему присоединена
+    d = defaultdict(list)
+    for g, v in zip(groups, values):  # объединяет два списка для их одновремнного перебора
+        d[g].append(v)
+        print(g)
+        print(v)  # четвёрку не выведет, т.е. проходимся пока есть индексы в ОБОИХ списках
+    print(d)
+    import pandas as pd
+    df = pd.DataFrame({'group': [1, 2, 1, 3], 'value': [3, 4, 7, 14]})
+    df['m'] = df.groupby('group')['value'].transform('mean')  # transform как оконная функция - предотвращает
+    # группировку, но в новый столбец 'm' добавляет среднее для каждой группы
+    print(df)
+    df = df.sort_values(['group', 'value'], ascending=[True, False])  # задали приоритет сортировки - сначала по
+    # группам, потом по значениям
+    print(df)
+
+
+def parsinguem_4():
+    number_1 = 34.123456789
+    number_2_rounded = f'{number_1:.2f}'
+    print(number_2_rounded)
+    number_2_rounded = f'{number_1:.8f}'  # 34.12345679 т.е. округляет нормально по-школьному
+    print(number_2_rounded)
+    number_2_rounded = f'{number_1:.4f}'
+    print(number_2_rounded)  # 34.1235
+
+
+def parso_1():
+    '''Вход: 3 1 4 1 5. Выведи сумму и максимум через пробел. → 14 5'''
+    line = read_line()
+    line = list(map(int, line.split()))
+    print(f'{sum(line)} {max(line)}')
+
+
+def parso_2():
+    '''Вход: 1 0 0 1 1. Выведи долю единиц в процентах с 2 знаками. → 60.00'''
+    line = read_line()
+    line = list(map(int, line.split()))
+    procenti = (sum(line) / len(line)) * 100
+    return f'{procenti:.2f}'
+
+
+def parso_3():
+    '''Вход: a, b, , c. Выведи число непустых элементов. → 3'''
+    line = read_line().split(', ')  # Если надо исключить пустую строку (или любое из: None, "", [], {}, 0 и False)
+    # , то приводим её к булеву значению:
+    count = sum(1 for item in line if item)
+    print(count)
+
+
+def parso_4():
+    '''Вход: yes no yes. Выведи yes, если «yes» больше половины, иначе no. → yes'''
+    line = read_line()
+    line = line.split()
+    cnt = 0
+    for l in line:
+        if l == 'yes':
+            cnt += 1
+    if cnt > len(line) / 2:
+        return 'yes'
+    else:
+        return 'no'
+
+
+def tie_break():
+    '''Вход: a, b, a, c, b. Выведи самый частый элемент; при равенстве выбери того, кто встретился раньше. → a'''
+    line = read_line()
+    line = line.split(', ')
+    cnt = {}
+    for l in line:
+        cnt[l] = cnt.get(l, 0) + 1
+    maxi = max(cnt, key=lambda k: cnt[k])
+    return maxi
+
+
+def tie_break_2():
+    '''То же, но при равенстве выбери того, кто встретился позже. → b'''
+    line = read_line()
+    line = line.split(', ')
+    cnt = {}
+    for l in line:
+        cnt[l] = cnt.get(l, 0) + 1
+    k_max, v_max = None, float('-inf')
+    for k, v in cnt.items():
+        print(k)
+        print(v)
+        print('-----')
+        if v >= v_max:
+            k_max, v_max = k, v
+        print(f'k_max = {k_max}, v_max = {v_max}')
+    print(cnt)
+    return k_max
+
+
+def tie_break_3():
+    '''Вход: a, t, b, a, c, b. Выведи самый редкий элемент; при равенстве выбери раннего. → t'''
+    line = read_line()
+    line = line.split(', ')
+    cnt = {}
+    for l in line:
+        cnt[l] = cnt.get(l, 0) + 1
+    mini = min(cnt, key=lambda k: cnt[k])
+    return mini
+
+
+def tie_break_4():
+    '''Вход: 5 3 5 3 1. Выведи все элементы, встретившиеся ровно 2 раза, в порядке первого появления. → 5 3'''
+    line = read_line()
+    line = line.split()
+    cnt = {}
+    for l in line:
+        cnt[l] = cnt.get(l, 0) + 1
+    for k, v in cnt.items():
+        if v == 2:
+            print(k)
+
+
+def tie_break_5():
+    '''Вход: x, y, x, z. Выведи элементы, которые встретились ровно один раз. → y, z'''
+    line = read_line()
+    line = line.split(', ')
+    cnt = {}
+    for l in line:
+        cnt[l] = cnt.get(l, 0) + 1
+    for k, v in cnt.items():
+        if v == 1:
+            print(k)
+
+
+def num_sum_etc_1():
+    '''Вход: 123 4 5555. Для каждого числа выведи количество цифр. → 3 1 4'''
+    line = read_line()
+    line = line.split()
+    for l in line:
+        print(len(l))
+
+
+def nm():
+    '''Вход: 121 7 4455. Для каждого числа выведи сумму цифр. → 4 7 18'''
+    line = read_line()
+    line = line.split()
+    for l in line:
+        sum = 0
+        for ch in l:
+            sum += int(ch)
+        print(sum, end=' ')
+
+
+def nmn():
+    '''Вход: 1 10 1 100. Выведи количество уникальных чисел. → 3'''
+    line = read_line()
+    line = line.split()
+    setik = set()  # Нужно обязательно создать множество конструктором. Так setik={} не пойдёт, не добаится список
+    setik.update(line)
+    print(len(setik))
+
+
+def bau():
+    '''Вход: 1, 5; 2, 7; 1, 9; 2, 3. Формат key, value.
+    Для каждого ключа выведи последнее значение в порядке первого появления. → 1, 9; 2, 3'''
+    line = read_line()
+    line = line.split('; ')
+    dicto = dict()
+    for l in line:
+        para = l.split(', ')
+        dicto[para[0]] = para[1]
+    print(f'{dicto}')
+
+
+def biu():
+    '''Вход: a, 1; b, 0; a, 0; b, 1; c, 1. Для каждого ключа выведи 1,
+    если его последний статус равен 1, иначе 0. → a, 0; b, 1; c, 1'''
+    line = read_line()
+    line = line.split('; ')
+    slovar = dict()
+    for l in line:
+        para = l.split(', ')
+        print(f'para = {para}')
+        slovar[para[0]] = para[1]
+    for para in slovar.items():
+        if para[1] == '1':  # ПОМНИТЬ, ЧТО СТРОКИ НАДО СРАВНИВАТЬ СО СТРОКАМИ. ЗДЕСЬ ЗАВИС, КОГДА
+            # СРАВНИВАЛ para[1]==1 - БЕЗ КАВЫЧЕК, т.е. строку с интом
+            print(f'{para[0]}, {para[1]}; ', end='')
         else:
-            print(f'-{i}')
-    print(f'result = {result}')
+            print(f'{para[0]}, 0; ', end='')
+
+
+'''Блок D. Группы (по 5 минут, сначала на чистом Python, потом на pandas) : '''
+
+
+def piu():
+    '''Вход (две строки): b, a, b и 10, 20, 30. Выведи среднее по каждой группе
+    в алфавитном порядке групп. → a, 20; b, 20'''
+    import statistics
+    line1 = read_line().split(', ')
+    line2 = read_line().split(', ')
+    slov = defaultdict(list)
+    for l1, l2 in zip(line1, line2):
+        slov[l1].append(l2)  # ЗДЕСЬ ВАЖНО ПОМНИТЬ, ЧТО APPEND ВЫЗЫВАЕТСЯ ЧЕРЕЗ ТОЧКУ НА СЛОВАРЕ БЕЗ ЗНАКА РАВНО
+    sorted_slov = dict(sorted(slov.items()))
+    for s in sorted_slov.items():
+        print(f'{s[0]}, {statistics.mean(map(int, (s[1])))}; ', end='')  # наверное лучше не использовать
+        # statistics, а просто делить сумму элементов на их число. Встроенной функции для среднего нет.
+
+
+def pio():
+    '''Вход (две строки): b, a, b и 10, 20, 30. Выведи для каждой строки исходного порядка среднее
+    по её группе. → 20, 20, 20'''
+    line1 = read_line().split(', ')
+    line2 = read_line().split(', ')
+    # slov=defaultdict(list)#Здесь ошибся начав сначала как в предыдущем составлять словарь, а здесь при этом нужно
+    # сохранить все первые элементы видимо...
+    # for l1, l2 in zip(line1, line2):
+    #     slov[l1].append(l2)
+    # for s in slov.items():
+    #     print(f'{s[0]} {sum(map(int, (s[1])))/len(s[1])}')
+    # Не стал сам делать, спросил у гугла, ответ ниже:
+
+
+def guglo_pio():
+    from collections import defaultdict
+    groups = 'b, a, b'.split(", ")  # например: b, a, b
+    values = [10, 20, 30]  # например: 10, 20, 30
+    grouped = defaultdict(list)
+    for g, v in zip(groups, values):
+        grouped[g].append(v)
+    means = {g: sum(vals) / len(vals) for g, vals in grouped.items()}
+    print(f'means={means}')
+    result = [int(means[g]) for g in groups]  # Вот важная вещь - проходимся по списку и в результате прохода
+    # по каждому элементу g в группе записываем в список значение из словаря means по ключу g
+    print(", ".join(map(str, result)))
+
+
+def pion():  # ТАК И НЕ РАЗОБРАЛСЯ КАК ЭТО ДЕЛАТЬ
+    '''Вход: b, a, b, a и 1, 2, 3, 4. Отсортируй по group ↑ и value ↓.
+    Выведи отклонения от среднего по группе в этом порядке. → -1, 1, 1, -1'''
+    import statistics
+    line1 = read_line().split(', ')
+    line2 = map(int, read_line().split(', '))
+    slov = defaultdict(list)
+    for k, v in zip(line1, line2):
+        slov[k].append(v)
+    print(slov)
+    sorted_slov = dict(sorted(slov.items()))
+    print(sorted_slov)
+    for para in sorted_slov.items():
+        para[1].sort(reverse=True)
+    print(sorted_slov)
+    # for para in sorted_slov.items():
+    #     print(statistics.pstdev(para[1]))
+    print([statistics.pstdev(sorted_slov[l]) for l in line1])
+
+
+def shpion():
+    '''Вход: b, a, b, a и 1, 2, 3, 4. Выведи группу с максимальной суммой. → a'''
+    # line1 = read_line().split(', ')
+    # line2 = list(map(int, read_line().split(', ')))
+    l1=['b', 'a', 'b', 'a']
+    l2=['11','2','3','4']
+    slov = defaultdict(list)
+    for k, v in zip(l1, l2):
+        slov[k].append(int(v))  # Завис т.к. вместо v написал  line2
+    print(slov)
+    maxi = max(slov, key=lambda k: slov[k])
+    print(maxi)  # a
+
+
+def shpion_perepisi():
+    l1 = read_line.split(', ')
+    l2 = list(map(int, read_line().split(', ')))  # Это преобразование в числа очень громоздкое. Можно при работе
+    # с числами просто сделать int(v)... Хотя не факт, что подойдёт, там ведь в max может начаться
+    # лексикографическое сравнение... Нет! Ведь я передал int в словарь, там так и останутся инты
+    s = defaultdict(list)
+    for k, v in zip(l1, l2):
+        s[k].append(v)
+    return max(s, key=lambda k: s[k])
+
+
+def test_zip_more_than2():  # Работает
+    l1 = [1, 3, 5, 7, 9]
+    l2 = ['a', 'b', 'c', 'd', 'e']
+    l3 = [2, 4, 6, 8, 10]
+    for a, b, c in zip(l1, l2, l3):
+        print(f'{a, b, c}')
+
+
+def gpion():
+    '''Вход: a, b, a, b, a и 1, 2, 3, 4, 5. Для каждой группы выведи (максимум − минимум). → a, 4; b, 2'''
+    line1 = read_line().split(', ')  # Задание конечно неточно ИИ создал
+    line2 = list(map(int, read_line().split(', ')))
+    slov = defaultdict(list)
+    for l1, l2 in zip(line1, line2):
+        slov[l1].append(l2)
+    for para in slov.items():
+        print(f'max for \'{para[0]}\' is {max(para[1])}; min for \'{para[0]}\' is {min(para[1])}')
+
+
+def gpion_perepisi():
+    l1 = read_line().split(', ')
+    l2 = list(map(int, read_line().split(', ')))
+    s = defaultdict(list)
+    for li1, li2 in zip(l1, l2):
+        s[li1].append(li2)
+    for para in s.items():
+        print(f'max ')
+
+
+def fpion():
+    '''Pandas: Вход (две строки): b, a, b и 10, 20, 30. Выведи среднее по каждой группе
+    в алфавитном порядке групп. → a, 20; b, 20'''
+    # line1=read_line().split(', ')
+    # line2=list(map(int, read_line().split(', ')))
+    line1 = ['b', 'a', 'b']
+    line2 = [10, 20, 30]
+    import pandas as pd
+    df = pd.DataFrame({'gruppa': line1, 'values': line2})
+    # df['m'] = \ #так и не понял как добавить столбец в датафрейм... хотя здесь это не требуется. Вроде
+    # как так: df['имя нового столбца']=...
+    grouped = df.groupby('gruppa')['values'].mean()
+    print(grouped)
+
+
+def fpion_perepisi():
+    import pandas as pd
+    l1 = ['b', 'a', 'b']
+    l2 = [10, 20, 30]
+    df = pd.DataFrame({'g': l1, 'v': l2})
+    gr = df.groupby('g')['v'].mean()
+
+
+def pigin():
+    '''Pandas Вход (две строки): b, a, b и 10, 13, 18. Выведи для каждой строки исходного
+    порядка среднее по её группе. → 14, 13, 14'''
+    line1 = ['b', 'a', 'b']
+    line2 = [10, 13, 18]
+    import pandas as pd
+    df = pd.DataFrame({'gruppa': line1, 'value': line2})
+    df = df.groupby('gruppa')['value'].transform("mean")
+    print(df)
+
+
+def pigin_perepisi():
+    import pandas as pd
+    l1 = ['b', 'a', 'b']
+    l2 = [10, 13, 18]
+    df = pd.DataFrame({'g': l1, 'v': l2})
+    df = df.groupby('g')['v'].transform('mean')
+    print(df)
+
+
+def pogin():
+    '''Pandas Вход: b, a, b, a и 1, 2, 3, 4. Отсортируй по group ↑ и value ↓.
+    Выведи отклонения от среднего по группе в этом порядке. → -1, 1, 1, -1'''
+    line1 = ['b', 'a', 'b', 'a']
+    line2 = [1, 2, 3, 4]
+    import pandas as pd
+    df = pd.DataFrame({'gruppa': line1, 'values': line2})
+    df = df.sort_values(['gruppa', 'values'], ascending=[True, False])
+    print(df)
+
+
+def pogin_perepisi():
+    print('')
+
+
+def pogol():
+    '''Вход: i, b, a, b, i, a и 7, 1, 2, 3, 1, 4. Выведи группу с максимальной суммой. → a'''
+    line1 = ['i', 'b', 'a', 'b', 'i', 'a']
+    line2 = [7, 1, 2, 3, 1, 4]
+    import pandas as pd
+    df = pd.DataFrame({'gruppi': line1, 'values': line2})
+    print(df)
+    grouped = df.groupby('gruppi', as_index=False)['values'].sum()
+    print(grouped)
+    grouped = grouped.sort_values(by='values', ascending=False)
+    print(grouped)
+    print(grouped.head(1)['values'])  # Пока так. Сойдёт
+
+
+def pogol_perepisi():
+    import pandas as pd
+    l1 = ['i', 'b', 'a', 'b', 'i', 'a']
+    l2 = [7, 1, 2, 3, 1, 4]
+    df = pd.DataFrame({'g': l1, 'v': l2})
+    gr = df.groupby('g', as_index=False)['v'].sum()
+    gr = gr.sort_values(by='v', ascending=False)
+    print(gr.head(1)['v'])
+
+
+def progol():
+    '''Вход: a, b, a, b, a и 1, 2, 3, 4, 5. Для каждой группы выведи (максимум − минимум). → a, 4; b, 2'''
+    line1 = ['a', 'b', 'a', 'b', 'a']  # Это задание тупое, наверное его не стоит больше делать
+    line2 = [1, 2, 3, 4, 5]
+    import pandas as pd
+    df = pd.DataFrame({'gruppi': line1, 'values': line2})
+    dfmax = df.groupby('gruppi')['values'].max()
+    print(dfmax)
+    dfmin = df.groupby('gruppi')['values'].min()
+    print(dfmin)
+
+
+def progol_perepisi():
+    import pandas as pd
+    l1 = ['a', 'b', 'a', 'b', 'a']
+    l2 = [1, 2, 3, 4, 5]
+    df = pd.DataFrame({'g': l1, 'v': l2})
+    dfma = df.groupby('g')['v'].max()
+    dfmi = df.groupby('g')['v'].min()
+
+
+def big_one():  # без пандас
+    '''Задача 1. Продуктовый аналитик. Выручка по последним значениям
+На вход подаётся одна строка с записями о выручке магазинов. Каждая запись имеет формат:
+city_id, shop_id, revenue
+Записи разделены точкой с запятой и идут в хронологическом порядке слева направо.
+Что нужно сделать
+Для каждого города посчитать суммарную выручку магазинов, учитывая у каждого магазина только
+его последнее значение revenue.
+Важные условия
+Магазин определяется парой city_id + shop_id.
+Города выводятся в порядке первого появления во входной строке.
+Результаты по городам соединяются через ; .
+ФОРМАТ ВВОДА
+city_id, shop_id, revenue; city_id, shop_id, revenue; ...
+ФОРМАТ ВЫВОДА
+city_id, sum; city_id, sum; ...
+ОТКРЫТЫЙ ТЕСТ #1
+ВВОД
+1, 10, 100; 1, 11, 50; 2, 10, 70; 1, 10, 120; 2, 10, 30
+ОЖИДАЕМЫЙ ВЫВОД
+1, 170; 2, 30'''
+    line = read_line().split('; ')
+    # cnt=defaultdict(list)
+    slov = {}
+    for l in line:
+        city_id, shop_id, revenue = l.split(', ')
+        print(f' {city_id}, {shop_id}, {revenue}')  # если все переменные в двух фигурных, то кортежем,
+        # если каждая отдельно в фигурных, то по одной
+        slov[(city_id, shop_id)] = revenue
+    print(slov)
+    cr = {}  # City Revenue
+    for (c, s), r in slov.items():  # Важный момент ЗДЕСЬ - СИНТАКСИС ПРОХОДА ПО СЛОВАРЮ С СОСТАВНЫМ КЛЮЧОМ
+        print(f'{c}, {s}, {r}')
+        cr[c] = cr.get(c, 0) + int(r)
+    for x in cr.items():
+        print(f'{x[0], x[1]}; ', end='')
+
+
+def big_one_perepisi():
+    line = read_line().split('; ')
+    slov = {}
+    for l in line:
+        c, s, r = l.split(', ')
+        slov[(c, s)] = r
+    cr = {}
+    for (c, s), r in slov.items():
+        cr[c] = cr.get(c, 0) + int(r)
+    for x in cr.items():
+        print(f'{x[0], x[1]}; ', end='')
+
+
+def big_one_pandas():
+    line = read_line().replace('; ', '\n')  # Важный шаг для того, чтобы read_csv() смог
+    # превратить строку в датафрейм
+    import pandas as pd
+    import io
+    df = pd.read_csv(io.StringIO(line), names=['c', 's', 'r'])  # Важно - ЧТЕНИЕ СТРОКИ В ДАТАФРЕЙМ
+    print(df)
+    df = df.drop_duplicates(subset=['c', 's'], keep='last')  # Важно убираем все записи, задублированные
+    # в виде комбинации c & s. Оставляем только одну, последнюю (нижнюю в таблице).
+    df = df.groupby('c')['r'].sum()
+    print(df)
+    for idx, s in df.items():  # так проходим по Series
+        print(f'{idx}, {s}; ', end='')  # Минут 20 делал с гуглом
+
+
+def big_one_pandas_perepisi():
+    import pandas as pd
+    import io
+    df = pd.read_csv(io.StringIO(read_line().replace('; ', '\n')))
+    df = df.drop_duplicates(subset=['c', 's'], keep='last')
+    df = df.group('c')['r'].sum()
+    for idx, s in df.items():
+        print(f'{idx}, {s}; ', end='')
 
 
 if __name__ == '__main__':
-    ods_ai_000()
+    shpion()
+    # pigin_perepisi()
+    # big_one_pandas()
+    # big_one()
+    # progol()
+    # pogin()
+    # gpion()
+    # guglo_pio()
+    # biu()
+    # bau()
+    # nmn()
+
+    # nm()
+
+    # num_sum_etc_1()
+
+    # tie_break_5()
+
+    # tie_break_4()
+
+    # print(tie_break_3())
+
+    # print(tie_break_2())
+
+    # print(tie_break())
+
+    # print(parso_4())
+
+    # parso_3()
+
+    # print(parso_2())
+
+    # parso_1()
+
+    # parsinguem_4()
+
+    # parsinguem_i_tp()
+
+    # parsinguem_3()
+
+    # parsinguem_2()
+
+    # parsinguem_1()
+
+    # deepseek_00()
+
+    # testok()
+
+    # ods_ai_002()
+
+    # ods_ai_001()
+    # compare_files("reshaem.txt", "test_output_file_1.txt")
+
+    # ods_ai_000()
 
     # test_words = ["eat", "tea", "tan", "ate", "nat", "bat"]
     # result = group_anagrams(test_words)
@@ -1438,40 +2245,40 @@ if __name__ == '__main__':
     # print("Результат группировки:")
     # print(result)
 
-#    print(anagrams("eat", "enraged", "cheater", "teacher", "tea", "tan", "angered", "ate", "nat", "bat"))
+    #    print(anagrams("eat", "enraged", "cheater", "teacher", "tea", "tan", "angered", "ate", "nat", "bat"))
 
-# print(find_pair_with_sum([2, 7, 11, 15], 9))  # (0, 1)
-# print(find_pair_with_sum([10, -3, 5, 1, 8], 2))  # (1, 2)
+    # print(find_pair_with_sum([2, 7, 11, 15], 9))  # (0, 1)
+    # print(find_pair_with_sum([10, -3, 5, 1, 8], 2))  # (1, 2)
 
-# print(unique_elems_order(1, 1 , 64, 2, 78, 0, 64))
-# print(even_more_10(4, 12, 15, 8, 22, 10, 31, 44))
-# second_biggest('5 3 9 1 9 7')  # 7
-# second_biggest('3 3 3 3')  # net
-# second_biggest('1 2')  # 1
-# second_biggest('5 5 4 4 3')  # 4
-# second_biggest('10')  # net
-# print(solve_04_palindrome('GrIold'))
-# print(solve_04_palindrome('kazak'))
-# print(solve_04_palindrome('oKno'))
-# print(solve_04_palindrome('komok'))
-# solve_03_b()
-# '''solve_02 начало запуска'''
-# test_input = '5 4 3 5 4'  # 4.20
-# sys.stdin = io.StringIO(test_input)
-# solve_02()
-# print('-------------')
-# test_input = '5 5 5 5'  # 5.0
-# sys.stdin = io.StringIO(test_input)
-# solve_02()
-# print('-------------')
-# test_input = '2 3 2 3'  # 2.50
-# sys.stdin = io.StringIO(test_input)
-# solve_02()
-# print('-------------')
-# test_input = '1 1 1'  # 1.0
-# sys.stdin = io.StringIO(test_input)
-# solve_02()
-# print('-------------')
+    # print(unique_elems_order(1, 1 , 64, 2, 78, 0, 64))
+    # print(even_more_10(4, 12, 15, 8, 22, 10, 31, 44))
+    # second_biggest('5 3 9 1 9 7')  # 7
+    # second_biggest('3 3 3 3')  # net
+    # second_biggest('1 2')  # 1
+    # second_biggest('5 5 4 4 3')  # 4
+    # second_biggest('10')  # net
+    # print(solve_04_palindrome('GrIold'))
+    # print(solve_04_palindrome('kazak'))
+    # print(solve_04_palindrome('oKno'))
+    # print(solve_04_palindrome('komok'))
+    # solve_03_b()
+    # '''solve_02 начало запуска'''
+    # test_input = '5 4 3 5 4'  # 4.20
+    # sys.stdin = io.StringIO(test_input)
+    # solve_02()
+    # print('-------------')
+    # test_input = '5 5 5 5'  # 5.0
+    # sys.stdin = io.StringIO(test_input)
+    # solve_02()
+    # print('-------------')
+    # test_input = '2 3 2 3'  # 2.50
+    # sys.stdin = io.StringIO(test_input)
+    # solve_02()
+    # print('-------------')
+    # test_input = '1 1 1'  # 1.0
+    # sys.stdin = io.StringIO(test_input)
+    # solve_02()
+    # print('-------------')
 '''solve_02 конец запуска'''
 # '''solve_01 начало запуска'''
 # test_input = '1 0 1 0 0 1 1 0'  # 50.0
